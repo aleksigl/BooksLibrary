@@ -1,5 +1,6 @@
 from datetime import date
 from app import db
+from sqlalchemy.ext.hybrid import hybrid_property
 
 
 class Book(db.Model):
@@ -34,9 +35,19 @@ class CheckoutRecord(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
     book = db.relationship('Book', backref=db.backref('checkout_records', lazy=True))
-    borrow_date = db.Column(db.Date, index=True, default=date.today())
+    borrow_date = db.Column(db.Date, index=True)
     return_date = db.Column(db.Date, index=True)
-    is_borrowed = db.Column(db.Boolean, unique=False, default=False)
+    _is_borrowed = db.Column(db.Boolean, unique=False, default=False)
+
+    @hybrid_property
+    def is_borrowed(self):
+        if self.borrow_date and self.return_date:
+            return self.borrow_date <= date.today() <= self.return_date
+        return False
+
+    @is_borrowed.setter
+    def is_borrowed(self, value):
+        self._is_borrowed = value
 
     def __str__(self):
         return f"<Checkout Record for {self.book.title}. \nIs book checked out: {self.is_borrowed}>"

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 from app import db
 
 
@@ -8,7 +8,7 @@ class Book(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey('author.id'))
     author = db.relationship("Author", backref=db.backref("books", lazy=True))
     genre = db.Column(db.String(200), index=True)
-    publish_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    publish_date = db.Column(db.Date, index=True)
 
     def __str__(self):
         return f"<Book '{self.title}'>"
@@ -34,8 +34,8 @@ class CheckoutRecord(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
     book = db.relationship('Book', backref=db.backref('checkout_records', lazy=True))
-    borrow_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    return_date = db.Column(db.DateTime, index=True)
+    borrow_date = db.Column(db.Date, index=True, default=date.today())
+    return_date = db.Column(db.Date, index=True)
     is_borrowed = db.Column(db.Boolean, unique=False, default=False)
 
     def __str__(self):
